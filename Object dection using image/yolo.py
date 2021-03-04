@@ -18,7 +18,7 @@ ap.add_argument("-t", "--threshold", type=float, default=0.3,
 args = vars(ap.parse_args())
 
 # load the COCO class labels our YOLO model was trained on
-labelsPath = 'yolo-coco\coco.names'
+labelsPath = '..//yolo-coco//coco.names'
 LABELS = open(labelsPath).read().strip().split("\n")
 
 # initialize a list of colors to represent each possible class label
@@ -27,8 +27,8 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 	dtype="uint8")
 
 # derive the paths to the YOLO weights and model configuration
-weightsPath = 'yolo-coco\yolov3.weights'
-configPath = 'yolo-coco\yolov3.cfg'
+weightsPath = '..//yolo-coco//yolov3.weights'
+configPath = '..//yolo-coco//yolov3.cfg'
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 print("[INFO] loading YOLO from disk...")
@@ -114,5 +114,5 @@ if len(idxs) > 0:
 			0.5, color, 2)
 
 # show the output image
-cv2.imshow("Image", image)
+cv2.imwrite("Test_Image.png", image)
 cv2.waitKey(0)
