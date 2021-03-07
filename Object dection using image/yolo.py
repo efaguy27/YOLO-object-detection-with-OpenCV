@@ -37,8 +37,6 @@ net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 # load our input image and grab its spatial dimensions
 image = cv2.imread(args["image"])
 (H, W) = image.shape[:2]
-print(image.shape)
-print("\n")
 
 # determine only the *output* layer names that we need from YOLO
 ln = net.getLayerNames()
@@ -93,7 +91,10 @@ for output in layerOutputs:
 			boxes.append([x, y, int(width), int(height)])
 			confidences.append(float(confidence))
 			classIDs.append(classID)
-#f = open("Test_output.txt", "w")
+f = open("Test_output.txt", "w")
+print(image.shape)
+f.write(str(image.shape))
+f.write("\n")
 # apply non-maxima suppression to suppress weak, overlapping bounding
 # boxes
 idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
@@ -104,16 +105,18 @@ for i in range(len(boxes)):
 			x, y, w, h = boxes[i]
 			label = str(LABELS[classIDs[i]])
 			item = image[y:y+h, x:x+w]
-			cv2.imwrite(f'{label}.png', item)
 			print(label)
 			print(x,y,w,h)
 			print("\n")
+			f.write(f'{label}\n')
+			f.write(f'{x},{y},{w},{h}\n\n')
+			cv2.imwrite(f'{label}{i}.png', item)
+
 
 # ensure at least one detection exists
 if len(idxs) > 0:
 	# loop over the indexes we are keeping
 	for i in idxs.flatten():
-		#f.write(f'{LABELS[classIDs[i]]}\n')
 		# extract the bounding box coordinates
 		(x, y) = (boxes[i][0], boxes[i][1])
 		(w, h) = (boxes[i][2], boxes[i][3])
@@ -124,6 +127,6 @@ if len(idxs) > 0:
 		text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
 		cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
 			0.5, color, 2)
-#f.close()
+f.close()
 # show the output image
-#cv2.imwrite("Test_Image.png", image)
+cv2.imwrite("Test_Image.png", image)
