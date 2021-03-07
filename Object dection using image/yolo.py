@@ -61,11 +61,13 @@ print("[INFO] YOLO took {:.6f} seconds".format(end - start))
 boxes = []
 confidences = []
 classIDs = []
+f = open("Test_output.txt", "w")
 
 # loop over each of the layer outputs
 for output in layerOutputs:
 	# loop over each of the detections
 	for detection in output:
+		f.write(str(detection))
 		# extract the class ID and confidence (i.e., probability) of
 		# the current object detection
 		scores = detection[5:]
@@ -92,7 +94,7 @@ for output in layerOutputs:
 			boxes.append([x, y, int(width), int(height)])
 			confidences.append(float(confidence))
 			classIDs.append(classID)
-
+f.close()
 # apply non-maxima suppression to suppress weak, overlapping bounding
 # boxes
 idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
