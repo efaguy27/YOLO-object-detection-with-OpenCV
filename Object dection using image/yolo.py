@@ -103,7 +103,7 @@ for i in range(len(boxes)):
 		if i in idxs:
 			x, y, w, h = boxes[i]
 			label = str(LABELS[classIDs[i]])
-			item = image[x:x+w, y:y+h]
+			item = image[y:y+h, x:x+w]
 			cv2.imwrite(f'{label}.png', item)
 			print(label)
 			print(x,y,w,h)
