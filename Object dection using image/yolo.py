@@ -91,7 +91,7 @@ for output in layerOutputs:
 			boxes.append([x, y, int(width), int(height)])
 			confidences.append(float(confidence))
 			classIDs.append(classID)
-f = open("Test_output.txt", "w")
+f = open("output//Test_output.txt", "w")
 print(image.shape)
 f.write(str(image.shape))
 f.write("\n")
@@ -110,7 +110,7 @@ for i in range(len(boxes)):
 			print("\n")
 			f.write(f'{label}\n')
 			f.write(f'{x},{y},{w},{h}\n\n')
-			cv2.imwrite(f'{label}{i}.png', item)
+			cv2.imwrite(f'output//{label}{i}.png', item)
 
 
 # ensure at least one detection exists
@@ -129,4 +129,4 @@ if len(idxs) > 0:
 			0.5, color, 2)
 f.close()
 # show the output image
-cv2.imwrite("Test_Image.png", image)
+cv2.imwrite("output//Image.png", image)
