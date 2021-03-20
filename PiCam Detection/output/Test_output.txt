@@ -1,0 +1,13 @@
+(360, 640, 3)
+chair
+['center', 'right']
+422,17,215,315
+
+diningtable
+['center', 'center']
+13,124,615,228
+
+fork
+['bottom', 'left']
+39,198,78,97
+
