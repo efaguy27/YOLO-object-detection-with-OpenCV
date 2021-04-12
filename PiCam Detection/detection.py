@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 
 import numpy as np
-import argparse
 import time
 import cv2
-import os
 from picamera import PiCamera
 from time import sleep
-import glob
 
 
-def detect_func(img_count):
+def detect_func(search_object, detection_count):
     camera = PiCamera()
 
     camera.resolution = (1920, 1080)
     camera.start_preview()
-    sleep(1)
-    camera.capture('/home/pi/41xx/YOLO-object-detection-with-OpenCV/PiCam Detection/images/test.jpg')
+    sleep(1) # Give camera sensor time to warm up
+    camera.capture('/home/pi/41xx/YOLO-object-detection-with-OpenCV/PiCam Detection/images/capture.jpg')
     print("[INFO] Picture taken")
     camera.stop_preview()
     camera.close()
@@ -27,12 +24,12 @@ def detect_func(img_count):
     configPath = '..//yolo-coco//yolov3.cfg'
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
-    min_confidence = 0.1
+    min_confidence = 0.5
     threshold = 0.3
-    items = ['cup', 'fork', 'knife', 'spoon', 'bowl']
+
     pos_result = None
     size_result = None
-    object_found = None
+    object_found = False
 
 
     
@@ -42,7 +39,7 @@ def detect_func(img_count):
     dtype="uint8")
 
     # load our input image and grab its spatial dimensions
-    image = cv2.imread("images/test.jpg")
+    image = cv2.imread("images/capture.jpg")
     (H, W) = image.shape[:2]
 
     # determine only the *output* layer names that we need from YOLO
@@ -69,9 +66,6 @@ def detect_func(img_count):
     confidences = []
     classIDs = []
 
-    files = glob.glob('output//*')
-    for f in files:
-        os.remove(f)
 
     # loop over each of the layer outputs
     for output in layerOutputs:
@@ -117,35 +111,12 @@ def detect_func(img_count):
                 direction = []
                 x, y, w, h = boxes[i]
                 label = str(LABELS[classIDs[i]])
-                if (label in items):
+                if (label == search_object):
                     item = image[y:y+h, x:x+w]
-                    if h > image.shape[0]/2:
-                        direction.append('center')
-                    elif y < image.shape[0]/3:
-                        direction.append('top')
-                    elif y < image.shape[0]/2:
-                        direction.append('center')
-                    else:
-                        direction.append('bottom')
-
-                    if w > image.shape[1]/2:
-                        direction.append('center')
-                    elif x > image.shape[1]/3:
-                        direction.append('right')
-                    elif x > image.shape[1]/2:
-                        direction.append('center')
-                    else:
-                        direction.append('left')
-
-                    print(label)
-                    print(direction)
-                    print(x,y,w,h)
-                    print("\n")
-                    offcentre = (x+(w/2))-(1920/2)
-                    pos_result = offcentre
+   
+                    pos_result = (x+(w/2))-(1920/2)
                     size_result = w*h
-                    object_found = label
-                    cv2.imwrite(f'output//{label}{i}.png', item)
+                    object_found = True
     # ensure at least one detection exists
     if len(idxs) > 0:
 	# loop over the indexes we are keeping
@@ -162,10 +133,7 @@ def detect_func(img_count):
                     cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, color, 2)
 
-    # show the output image
-    cv2.imwrite(f'output//Image{img_count}.png', image)
+    # save the output image
+    cv2.imwrite(f'output//Image{detection_count}.png', image)
     return(object_found, pos_result, size_result)
 
-
-if __name__ == '__main__':
-    print(detect_func(5))

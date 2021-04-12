@@ -2,65 +2,65 @@
 import drive
 import detection
 import time
+import argparse
 
-(MA, MB) = drive.GPIO_setup()
+ap = argparse.ArgumentParser()
+ap.add_argument("-s", "--size", required=True,
+	help="length of area being searched in meters")
+ap.add_argument("-o", "--object", required=True,
+	help="label of object being searched for")    #cup, fork, knife, spoon, bowl are the supported objects
     
-found = False
-
-#object_size = 0
-(object_found, pos_result, size_result) = detection.detect_func()
-print(pos_result)
-print(size_result)
+if (args['object'] == 'bowl'):
+    object_size = 350000
+elif (args['object'] == 'cup'):
+    object_size = 450000
+elif (args['object'] == 'fork' || args['object'] == 'knife' || args['object'] == 'spoon'):
+    object_size = 200000
+else:
+    print("Invalid object entered\n")
+    quit()
+    
+area_searched = 0
+ 
+(M1, M2) = drive.GPIO_setup()
+detection_count = 1
+(object_found, pos_result, size_result) = detection.detect_func(args['object'], 0)
 
 while (1):
-    if (object_found == None):
-        if (found == True):
-            print("Lost object\n")
+    if (object_found == False): 
+        #Check if entire area has been searched
+        if (area_searched >= args['size']):
+            print("Entire area searched, no objects found\n")
             break
-        print("Nothing found. Moving down\n")
-        
-        drive.turn_right(MA, MB, 1.6)
+            
+        #Nothing found. Move to next search location
+        drive.turn_right(M1, M2, 1.5) #Turn right 90 degrees
         time.sleep(0.5)
-        drive.foward(MA, MB, 1)
+        drive.foward(M1, M2, 1) # Move foward 0.22 meters
+        area_searched = area_searched + 0.22
         time.sleep(0.5)
-        drive.turn_left(MA, MB, 1.45)
-    
-        (object_found, pos_result, size_result) = detection.detect_func()
-        if (object_found != None):
-            found = True
-            #if (object_found == 'bowl'):
-             #   object_size = 350000
-            #elif (object_found == 'cup'):
-             #   object_size = 
-        print(pos_result)
-        print(size_result)
-    elif (size_result > 350000):
-        print('Done')
+        drive.turn_left(M1, M2, 1.5) #Turn left 90 degrees
+
+    elif (size_result > object_size):
+        print(f'Done, {object_found} found in {detection_count} detections\n')
         break
-    elif (abs(pos_result) < 200):
-        rel_size = 850000/size_result
-        drive.foward(MA, MB, (rel_size/7))
-        (object_found, pos_result, size_result) = detection.detect_func()
-        print(pos_result)
-        print(size_result)
-    elif (pos_result > 0):
-        print("Offcentre right\n")
+    elif (abs(pos_result) < 200): #Directly ahead move forward
+        rel_size = object_size/size_result
+        drive.foward(M1, M2, (rel_size/2.5))
+
+    elif (pos_result > 0): #Offcentre right, turn right and move foward
         rel_pos = pos_result-200
-        rel_size = 850000/size_result
-        drive.turn_right(MA, MB, rel_pos/1000)
-        drive.foward(MA, MB, (rel_size/7))
-        (object_found, pos_result, size_result) = detection.detect_func()
-        print(pos_result)
-        print(size_result)
-    elif (pos_result < 0):
-        print("Offcentre left\n")
+        rel_size = object_size/size_result
+        drive.turn_right(M1, M2, rel_pos/1000)
+        drive.foward(M1, M2, (rel_size/2.5))
+
+    elif (pos_result < 0): #Offcentre left, turn left and move foward
         rel_pos = abs(pos_result)-200
-        rel_size = 850000/size_result
-        drive.turn_left(MA, MB, rel_pos/1000)
-        drive.foward(MA, MB, (rel_size/7))
-        (object_found, pos_result, size_result) = detection.detect_func()
-        print(pos_result)
-        print(size_result)
+        rel_size = object_size/size_result
+        drive.turn_left(M1, M2, rel_pos/1000)
+        drive.foward(M1, M2, (rel_size/2.5))
         
+    (object_found, pos_result, size_result) = detection.detect_func(args['object'], detection_count)
+    detection_count = detection_count + 1    
 
 drive.GPIO_clean()
