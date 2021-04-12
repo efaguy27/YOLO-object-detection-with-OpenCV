@@ -4,6 +4,8 @@
 import time
 import RPi.GPIO as GPIO
 
+import detection
+
 def GPIO_setup():
     # Declare the GPIO settings
     GPIO.setmode(GPIO.BOARD)
@@ -39,7 +41,7 @@ def backward(MA, MB):
     # Motor B:
     MB.stop()
     
-def foward(MA, MB):
+def foward(MA, MB, t):
 
     # Drive the robot backward
     # Motor A:
@@ -54,14 +56,14 @@ def foward(MA, MB):
     MB.start(50)
 
     # Wait 1 seconds
-    time.sleep(1)
+    time.sleep(t)
     
     # Motor A:
     MA.stop()
     # Motor B:
     MB.stop()
     
-def turn_left(MA, MB):
+def turn_left(MA, MB, t):
 
      # Drive the robot backward
     # Motor A:
@@ -71,19 +73,19 @@ def turn_left(MA, MB):
 
     # Set the motor speed
     # Motor A:
-    MA.start(50)
+    MA.start(45)
     # Motor B:
-    MB.start(50)
+    MB.start(45)
 
     # Wait 1 seconds
-    time.sleep(1)
+    time.sleep(t)
     
     # Motor A:
     MA.stop()
     # Motor B:
     MB.stop()
     
-def turn_right(MA, MB):
+def turn_right(MA, MB, t):
 
      # Drive the robot backward
     # Motor A:
@@ -93,12 +95,12 @@ def turn_right(MA, MB):
 
     # Set the motor speed
     # Motor A:
-    MA.start(50)
+    MA.start(60)
     # Motor B:
-    MB.start(50)
+    MB.start(60)
 
     # Wait 1 seconds
-    time.sleep(1)
+    time.sleep(t)
     
     # Motor A:
     MA.stop()
@@ -117,11 +119,23 @@ def GPIO_clean():
     
 if __name__ == '__main__':
     (MA, MB) = GPIO_setup()
-    foward(MA, MB)
-    time.sleep(1)
-    turn_right(MA, MB)
-    time.sleep(1)
-    backward(MA, MB)
-    time.sleep(1)
-    turn_left(MA, MB)
+    #(object_found, pos_result, size_result) = detection.detect_func(0)
+    turn_right(MA, MB, 1.7)
+    time.sleep(0.5)
+    foward(MA, MB, 1)
+    time.sleep(0.5)
+    turn_left(MA, MB, 1.5)
+    #(object_found, pos_result, size_result) = detection.detect_func(1)
+    time.sleep(30)
+   
+    turn_right(MA, MB, 0.3)
+    foward(MA, MB, 2)
+    time.sleep(31)
+    turn_left(MA,MB,0.3)
+    foward(MA,MB, 0.4)
+    
+
+    #time.sleep(32)
+    
+    #turn_right(MA, MB, 1.6)
     GPIO_clean()

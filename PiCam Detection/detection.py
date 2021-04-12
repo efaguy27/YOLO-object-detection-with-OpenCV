@@ -9,16 +9,17 @@ from picamera import PiCamera
 from time import sleep
 import glob
 
-def detect_func():
+
+def detect_func(img_count):
     camera = PiCamera()
 
-    camera.resolution = (640, 360)
-    #camera.start_preview()
+    camera.resolution = (1920, 1080)
+    camera.start_preview()
     sleep(1)
     camera.capture('/home/pi/41xx/YOLO-object-detection-with-OpenCV/PiCam Detection/images/test.jpg')
     print("[INFO] Picture taken")
+    camera.stop_preview()
     camera.close()
-    #camera.stop_preview()
     
     labelsPath = '..//yolo-coco//coco.names'
     LABELS = open(labelsPath).read().strip().split("\n")
@@ -29,6 +30,11 @@ def detect_func():
     min_confidence = 0.1
     threshold = 0.3
     items = ['cup', 'fork', 'knife', 'spoon', 'bowl']
+    pos_result = None
+    size_result = None
+    object_found = None
+
+
     
     # initialize a list of colors to represent each possible class label
     np.random.seed(42)
@@ -121,7 +127,7 @@ def detect_func():
                         direction.append('center')
                     else:
                         direction.append('bottom')
-    
+
                     if w > image.shape[1]/2:
                         direction.append('center')
                     elif x > image.shape[1]/3:
@@ -130,14 +136,36 @@ def detect_func():
                         direction.append('center')
                     else:
                         direction.append('left')
-    
+
                     print(label)
                     print(direction)
                     print(x,y,w,h)
                     print("\n")
-                    return(direction)
-    return(0)
- 
-    
+                    offcentre = (x+(w/2))-(1920/2)
+                    pos_result = offcentre
+                    size_result = w*h
+                    object_found = label
+                    cv2.imwrite(f'output//{label}{i}.png', item)
+    # ensure at least one detection exists
+    if len(idxs) > 0:
+	# loop over the indexes we are keeping
+	    for i in idxs.flatten():
+		# extract the bounding box coordinates
+                (x, y) = (boxes[i][0], boxes[i][1])
+                (w, h) = (boxes[i][2], boxes[i][3])
+
+                if (LABELS[classIDs[i]] in items):
+                    # draw a bounding box rectangle and label on the image
+                    color = [int(c) for c in COLORS[classIDs[i]]]
+                    cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
+                    text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
+                    cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, color, 2)
+
+    # show the output image
+    cv2.imwrite(f'output//Image{img_count}.png', image)
+    return(object_found, pos_result, size_result)
+
+
 if __name__ == '__main__':
-    detect_func()
+    print(detect_func(5))
